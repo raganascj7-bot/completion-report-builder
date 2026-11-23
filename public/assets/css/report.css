@@ -1,0 +1,265 @@
+/* ==========================================================================
+   report.css — the A4 report pages ONLY (794 × 1123 px at 96 dpi).
+   Used by the live preview, the template editor and the PDF export.
+   Every rule is scoped under .report-page.
+
+   Colours, fonts and a few positions come from --rp-* variables that the
+   page builder (assets/js/builder/theme.js) puts on each page. The default
+   values reproduce the client's TOLE August 2026 report exactly.
+
+   Layout variants are switched by classes on .report-page:
+     rp-h-*  header   (tole · band · line · none)
+     rp-f-*  footer   (band · line · none)
+     rp-t-*  tables   (boxed · lined · striped)
+     rp-d-*  decoration (arcs · none)
+   and cover/contact classes (rp-cover-band, rp-cover-centered, …).
+   ========================================================================== */
+
+.report-page {
+    position: relative;
+    width: 794px;
+    height: 1123px;
+    overflow: hidden;
+    background: var(--rp-page-bg, #fff);
+    color: var(--rp-text, #111);
+    font-family: var(--rp-font-body, var(--font-report));
+    font-size: 13.5px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    /* A long word with no spaces (a link, a hashtag) breaks inside its own box instead of running into the next one. */
+    overflow-wrap: break-word;
+}
+.report-page * { box-sizing: border-box; }
+.report-page p { margin: 0; }
+.report-page a { color: inherit; }
+
+/* ---------- Shared: brand mark, custom logo, decorative rings ---------- */
+.report-page .rp-mark { display: block; }
+.report-page .rp-logo-img { display: block; height: 40px; width: auto; max-width: 220px; }
+.report-page .rp-ring {
+    /* A circle drawn as a thick border; its container clips it to an arc. */
+    position: absolute;
+    border-radius: 50%;
+    border-style: solid;
+    background: transparent;
+}
+.report-page .rp-clip { position: absolute; overflow: hidden; }
+
+/* ---------- Header: TOLE band ---------- */
+.report-page .rp-band { position: absolute; inset: 0 0 auto 0; height: 130px; background: var(--rp-header-bg); overflow: hidden; }
+.report-page .rp-band-logo { position: absolute; left: 58px; top: 47px; display: flex; align-items: center; gap: 7px; }
+.report-page .rp-band-logo .rp-mark { width: 47px; height: 36px; }
+.report-page .rp-band-logo span { color: var(--rp-header-text); font-weight: 800; font-size: 12px; line-height: 1.12; letter-spacing: .01em; }
+/* White quarter ring (straight left edge) under an accent ring, as in TOLE. */
+.report-page .rp-band .rp-band-white { left: 600px; top: 0; width: 194px; height: 130px; }
+.report-page .rp-band .rp-band-white .rp-ring { left: -111px; top: 32px; width: 222px; height: 222px; border-width: 64px; border-color: var(--rp-header-text); }
+.report-page .rp-band .rp-ring-lime { left: 661px; top: -157px; width: 266px; height: 266px; border-width: 73px; border-color: var(--rp-accent); }
+
+/* ---------- Header: plain band ---------- */
+.report-page .rp-band.rp-band-plain { height: 110px; }
+.report-page .rp-band-plain .rp-band-logo { top: 37px; }
+.report-page .rp-band-plain .rp-ring-corner { left: 688px; top: -100px; width: 200px; height: 200px; border-width: 46px; border-color: var(--rp-accent); }
+
+/* ---------- Header: logo with a thin line ---------- */
+.report-page .rp-hline { position: absolute; inset: 0 0 auto 0; height: 104px; }
+.report-page .rp-hline-logo { position: absolute; left: 58px; top: 32px; display: flex; align-items: center; gap: 8px; }
+.report-page .rp-hline-logo .rp-mark { width: 47px; height: 36px; }
+.report-page .rp-hline-logo span { color: var(--rp-primary); font-weight: 800; font-size: 12px; line-height: 1.12; }
+.report-page .rp-hline-rule { position: absolute; left: 58px; right: 58px; top: 94px; height: 3px; background: var(--rp-primary); }
+
+/* ---------- Footer ---------- */
+.report-page .rp-footer {
+    position: absolute; inset: auto 0 0 0; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--rp-footer-bg); color: var(--rp-footer-text);
+    font-family: var(--rp-font-heading); font-weight: 700; font-size: 19px;
+}
+.report-page .rp-page-no { position: absolute; right: 28px; font-size: 15px; }
+.report-page.rp-f-line .rp-footer {
+    left: 58px; right: 58px; height: 44px; background: transparent;
+    border-top: 2px solid var(--rp-footer-bg); font-size: 14px; font-weight: 600;
+}
+.report-page.rp-f-line .rp-page-no { right: 0; font-size: 13px; }
+
+/* ---------- Page titles ---------- */
+.report-page .rp-title {
+    position: absolute; left: 40px; right: 40px; top: var(--rp-title-top, 164px);
+    text-align: var(--rp-title-align, center); text-transform: var(--rp-title-transform, none);
+    color: var(--rp-title); font-family: var(--rp-font-heading);
+    font-weight: 700; font-size: 30px; letter-spacing: .005em; line-height: 1.2;
+}
+.report-page .rp-title-text { display: inline; }
+.report-page .rp-subtitle { font-size: 19px; font-weight: 700; margin-top: 16px; line-height: 1.3; text-transform: none; color: var(--rp-text); }
+.report-page .rp-subtitle small { display: block; font-size: 19px; font-weight: 700; }
+.report-page .rp-links { margin-top: 14px; display: flex; flex-direction: column; align-items: var(--rp-links-align, center); gap: 0; line-height: 1.25; text-transform: none; }
+.report-page .rp-links a { font-size: 18px; font-weight: 700; color: var(--rp-text); text-decoration: underline; }
+.report-page .rp-continued { font-weight: 500; font-size: 15px; color: #666; margin-left: 8px; text-transform: none; }
+
+/* ---------- 1. Cover (TOLE) ---------- */
+.report-page.rp-cover { background: var(--rp-cover-bg); color: var(--rp-cover-text); }
+.rp-cover .rp-cover-logo { position: absolute; left: 80px; top: 57px; display: flex; align-items: center; gap: 10px; }
+.rp-cover .rp-cover-logo .rp-mark { width: 81px; height: 62px; }
+.rp-cover .rp-cover-logo .rp-logo-img { height: 62px; max-width: 320px; }
+.rp-cover .rp-cover-logo span { font-weight: 800; font-size: 21px; line-height: 1.08; }
+.rp-cover .rp-cover-rule { position: absolute; left: 80px; top: 151px; width: 254px; height: 4px; background: var(--rp-cover-text); }
+.rp-cover .rp-headline {
+    position: absolute; left: 80px; top: 258px; width: 520px; margin: 0;
+    font-family: var(--rp-font-display); font-weight: 800; font-size: 66px; line-height: 1.07; letter-spacing: .005em;
+}
+.rp-cover .rp-headline .lime { display: block; color: var(--rp-cover-accent); }
+.rp-cover .rp-half-ring { left: 603px; top: 264px; width: 112px; height: 224px; }
+.rp-cover .rp-half-ring .rp-ring { left: -112px; top: 0; width: 224px; height: 224px; border-width: 56px; border-color: var(--rp-cover-text); }
+.rp-cover .rp-corner { left: 655px; top: 0; width: 139px; height: 139px; }
+.rp-cover .rp-corner .rp-ring { left: 0; top: -139px; width: 278px; height: 278px; border-width: 64px; border-color: var(--rp-accent); }
+.rp-cover .rp-cover-photo {
+    position: absolute; left: 0; top: 597px; width: 714px; height: 270px;
+    border-radius: 0 42px 42px 0; overflow: hidden; background: rgba(255, 255, 255, .12);
+    display: flex; align-items: center; justify-content: center;
+}
+.rp-cover .rp-cover-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.report-page .rp-placeholder { color: rgba(127, 127, 127, .9); font-size: 15px; text-align: center; padding: 10px; }
+.rp-cover .rp-prepared { position: absolute; top: 937px; font-size: 25px; line-height: 1.45; }
+.rp-cover .rp-prepared b { display: block; font-weight: 800; }
+.rp-cover .rp-prepared-for { left: 80px; width: 330px; }
+.rp-cover .rp-prepared-by { left: 437px; width: 330px; }
+
+/* Month and year under a fitted title (every cover layout except TOLE). */
+.rp-cover .rp-cover-month { font-size: .58em; margin-top: .3em; line-height: 1.15; }
+
+/* ---------- Cover: colour block on top, photo below ---------- */
+.report-page.rp-cover-band { background: var(--rp-page-bg); color: var(--rp-text); }
+.rp-cover-band .rp-cover-block { position: absolute; left: 0; top: 0; width: 794px; height: 560px; background: var(--rp-cover-bg); color: var(--rp-cover-text); overflow: hidden; }
+.rp-cover-band .rp-cover-logo { top: 64px; }
+.rp-cover-band .rp-headline { top: 214px; }
+.rp-cover-band .rp-cover-photo { left: 0; top: 560px; width: 794px; height: 340px; border-radius: 0; background: rgba(127, 127, 127, .15); }
+.rp-cover-band .rp-prepared { top: 935px; font-size: 21px; }
+.rp-cover-band .rp-prepared b { color: var(--rp-primary); }
+
+/* ---------- Cover: centred ---------- */
+.rp-cover-centered .rp-cover-logo { left: 0; right: 0; top: 72px; justify-content: center; }
+.rp-cover-centered .rp-headline { left: 0; width: 794px; top: 236px; text-align: center; font-size: 62px; }
+.rp-cover-centered .rp-cover-photo { left: 80px; top: 590px; width: 634px; height: 300px; border-radius: 22px; }
+.rp-cover-centered .rp-prepared { top: 935px; width: 300px; text-align: center; font-size: 21px; }
+.rp-cover-centered .rp-prepared-for { left: 97px; }
+.rp-cover-centered .rp-prepared-by { left: 397px; }
+
+/* ---------- Cover: colour panel left, photo right ---------- */
+.report-page.rp-cover-split { background: var(--rp-page-bg); }
+.rp-cover-split .rp-cover-panel { position: absolute; left: 0; top: 0; width: 397px; height: 1123px; background: var(--rp-cover-bg); color: var(--rp-cover-text); }
+.rp-cover-split .rp-cover-logo { left: 48px; top: 64px; }
+.rp-cover-split .rp-cover-logo .rp-mark { width: 62px; height: 48px; }
+.rp-cover-split .rp-cover-logo span { font-size: 16px; }
+.rp-cover-split .rp-headline { left: 48px; top: 300px; width: 320px; font-size: 50px; }
+.rp-cover-split .rp-prepared { left: 48px; width: 310px; font-size: 19px; }
+.rp-cover-split .rp-prepared-for { top: 820px; }
+.rp-cover-split .rp-prepared-by { top: 940px; }
+.rp-cover-split .rp-cover-photo { left: 397px; top: 0; width: 397px; height: 1123px; border-radius: 0; background: rgba(127, 127, 127, .15); }
+
+/* ---------- 2. Project completion report ---------- */
+.rp-summary .rp-summary-body { position: absolute; left: 54px; right: 44px; top: var(--rp-summary-top, 165px); bottom: 60px; font-size: 17.5px; line-height: 24px; }
+.rp-summary .rp-date { font-weight: 700; font-size: 17px; }
+.rp-summary .rp-doc-title { text-align: var(--rp-title-align, center); font-family: var(--rp-font-heading); color: var(--rp-title); font-weight: 700; font-size: 31px; line-height: 36px; margin: 32px 0 30px; letter-spacing: .005em; }
+.rp-summary h4 { margin: 0; font-family: var(--rp-font-heading); font-size: 17.5px; font-weight: 700; text-transform: uppercase; }
+.rp-summary .rp-block { margin-bottom: 25px; }
+.rp-summary .rp-dates { margin-bottom: 38px; }
+.rp-summary .rp-closing { margin: 0 3px 46px; }
+.rp-summary .rp-sign { margin: 0 3px; line-height: 21px; }
+.rp-summary .rp-sign + .rp-approved { margin-top: 66px; }
+.rp-summary .rp-sign b { font-weight: 700; display: block; }
+.rp-summary .rp-approved { font-weight: 700; margin: 0 3px 42px; }
+.report-page.rp-h-none .rp-summary-body, .report-page.rp-h-line .rp-summary-body { font-size: 16.5px; }
+
+/* ---------- Image pages (calendar, content, posted, creatives) ---------- */
+.report-page .rp-images {
+    position: absolute; left: 40px; right: 40px;
+    display: grid; gap: 12px; align-content: start; justify-content: center;
+}
+.report-page .rp-images .rp-cell { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; min-width: 0; }
+.report-page .rp-images .rp-cell img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; min-height: 0; }
+.report-page .rp-images .rp-cell .rp-cap { font-size: 11.5px; text-align: center; margin-top: 4px; line-height: 1.3; flex: none; }
+.report-page .rp-images.is-single .rp-cell { align-items: center; justify-content: flex-start; }
+.report-page .rp-empty {
+    position: absolute; left: 40px; right: 40px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    border: 2px dashed #c9cbd3; border-radius: 10px; color: #8a8f99; font-size: 14px; padding: 20px;
+}
+
+/* ---------- Tables (content shoot, breakdown) ---------- */
+.report-page .rp-table-wrap { position: absolute; left: 44px; right: 44px; top: var(--rp-table-top, 214px); }
+.report-page .rp-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; line-height: 1.45; }
+.report-page .rp-table th {
+    background: var(--rp-th-bg); color: var(--rp-th-text); font-family: var(--rp-font-heading); font-weight: 800; font-size: 10.5px; text-transform: uppercase;
+    padding: 30px 10px; text-align: center; border: 1px solid var(--rp-th-bg);
+}
+.report-page .rp-table td { border: 1px solid var(--rp-border); padding: 24px 14px; vertical-align: middle; }
+.report-page .rp-table .rp-center { text-align: center; }
+.report-page .rp-table .rp-link { color: var(--rp-link); text-decoration: underline; word-break: break-all; text-align: center; font-size: 10.5px; }
+.report-page .rp-table ul { margin: 4px 0 0; padding-left: 18px; }
+.report-page .rp-table li { margin: 0; }
+.report-page .rp-table .rp-status { text-align: center; font-weight: 500; font-size: 11px; }
+.report-page .rp-table .rp-scope b { font-weight: 800; }
+.report-page .rp-table .rp-note { text-align: center; white-space: pre-line; }
+.report-page .rp-table .rp-desc { white-space: pre-line; }
+/* Lines between rows only */
+.report-page.rp-t-lined .rp-table th { padding: 18px 10px; }
+.report-page.rp-t-lined .rp-table td { border-left: 0; border-right: 0; border-top: 0; padding: 18px 12px; }
+/* Striped rows */
+.report-page.rp-t-striped .rp-table th { padding: 18px 10px; }
+.report-page.rp-t-striped .rp-table td { border: 0; padding: 18px 12px; }
+.report-page.rp-t-striped .rp-table tbody tr:nth-child(even) td { background: rgba(127, 127, 127, .1); }
+
+/* ---------- 9. Contact us (TOLE) ---------- */
+.report-page.rp-contact { background: var(--rp-cover-bg); color: var(--rp-cover-text); }
+.rp-contact .rp-c-ring { left: 80px; top: 129px; width: 96px; height: 192px; }
+.rp-contact .rp-c-ring .rp-ring { left: 0; top: 0; width: 192px; height: 192px; border-width: 55px; border-color: var(--rp-cover-text); }
+.rp-contact .rp-c-head { position: absolute; left: 365px; top: 128px; width: 380px; }
+.rp-contact .rp-c-head h1 { margin: 0 0 10px; font-family: var(--rp-font-display); font-weight: 800; font-size: 49px; line-height: 1.1; letter-spacing: .01em; }
+.rp-contact .rp-c-head p { font-size: 13.5px; line-height: 1.6; max-width: 330px; }
+.rp-contact .rp-c-list { position: absolute; left: 55px; top: 468px; width: 360px; display: flex; flex-direction: column; gap: 30px; }
+.report-page .rp-c-item { font-size: 18px; line-height: 1.45; white-space: pre-line; word-break: break-word; }
+.report-page .rp-c-label { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 19px; margin-bottom: 2px; }
+.report-page .rp-c-label svg { width: 20px; height: 20px; flex: none; }
+.rp-contact .rp-c-lime { position: absolute; left: 614px; top: 399px; width: 140px; height: 210px; background: var(--rp-accent); border-radius: 0 42px 0 0; }
+.rp-contact .rp-c-photo {
+    position: absolute; left: 414px; top: 431px; width: 306px; height: 463px;
+    border-radius: 70px 0 70px 0; overflow: hidden; background: rgba(255, 255, 255, .12);
+    display: flex; align-items: center; justify-content: center;
+}
+.rp-contact .rp-c-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rp-contact .rp-c-rule { position: absolute; left: 82px; top: 1043px; width: 254px; height: 4px; background: var(--rp-cover-text); }
+.rp-contact .rp-corner { left: 655px; top: 984px; width: 139px; height: 139px; }
+.rp-contact .rp-corner .rp-ring { left: 0; top: 0; width: 278px; height: 278px; border-width: 64px; border-color: var(--rp-accent); }
+
+/* ---------- Contact: regular page ---------- */
+.rp-contact-simple .rp-cs-intro { position: absolute; left: 58px; right: 58px; top: calc(var(--rp-title-top) + 52px); text-align: var(--rp-title-align); font-size: 15px; }
+.rp-contact-simple .rp-cs-list { position: absolute; left: 58px; top: calc(var(--rp-title-top) + 150px); width: 340px; display: flex; flex-direction: column; gap: 30px; }
+.rp-contact-simple .rp-c-label { color: var(--rp-title); }
+.rp-contact-simple .rp-cs-photo {
+    position: absolute; left: 436px; top: calc(var(--rp-title-top) + 150px); width: 300px; height: 420px;
+    border-radius: 24px; overflow: hidden; background: rgba(127, 127, 127, .12);
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* ==========================================================================
+   Exact-copy pages (templates read from a PDF) — see builder/layout-render.js.
+   The background picture holds shapes and colours; texts and photos sit on
+   top at the exact positions read from the PDF.
+   ========================================================================== */
+.report-page.lt-page { background: #fff; }
+.lt-page .lt-bg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; pointer-events: none; user-select: none; }
+.lt-page .lt-img { position: absolute; display: block; overflow: hidden; }
+.lt-page .lt-img img { width: 100%; height: 100%; display: block; }
+.lt-page .lt-text { position: absolute; margin: 0; padding: 0; text-decoration: none; font-kerning: normal; font-variant-ligatures: normal; }
+.lt-page .lt-link { position: absolute; display: block; }
+.lt-page .lt-slot {
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    border: 2px dashed #9aa0ad; background: rgba(240, 242, 247, .85); color: #5b6270;
+    font: 600 13px/1.3 "Inter", Arial, sans-serif;
+}
+/* Editing only (never printed: the export renders pages without .lt-editing). */
+.lt-editing [data-el] { cursor: pointer; }
+.lt-editing [data-el]:hover { outline: 1px dashed rgba(53, 0, 255, .7); outline-offset: 1px; }
+.lt-editing .lt-link { background: rgba(53, 0, 255, .08); }
+.lt-editing [data-el].is-selected { outline: 2px solid #3500ff; outline-offset: 1px; }
+.lt-editing .lt-text.is-overflowing { outline: 2px solid #d92d20; outline-offset: 1px; }
+.lt-editing .lt-text.is-empty { color: #9aa0ad !important; font-style: italic; }

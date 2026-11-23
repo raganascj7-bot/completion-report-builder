@@ -1,0 +1,17 @@
+# Secrets
+.env
+
+# User uploads and logs (back these up, never commit them)
+storage/uploads/*
+!storage/uploads/.gitkeep
+storage/logs/*
+!storage/logs/.gitkeep
+storage/templates/*
+!storage/templates/.gitkeep
+
+# Dependencies and OS files
+vendor/
+node_modules/
+.DS_Store
+Thumbs.db
+*.log

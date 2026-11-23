@@ -1,0 +1,200 @@
+/* ==========================================================================
+   base.css — design tokens, fonts, reset and shared controls.
+   Colours and fonts are defined ONLY here. app.css and report.css use the
+   variables below and never hard-code a brand value.
+   ========================================================================== */
+
+/* Fonts are self-hosted (OFL licence, files in ../fonts) so the preview and
+   the PDF look the same on every computer and never wait for a CDN. */
+@font-face {
+    font-family: "Montserrat";
+    src: url("../fonts/Montserrat-Variable.woff") format("woff");
+    font-weight: 100 900;
+    font-display: swap;
+}
+@font-face { font-family: "Inter"; src: url("../fonts/Inter-Regular.woff") format("woff"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("../fonts/Inter-Medium.woff") format("woff"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("../fonts/Inter-SemiBold.woff") format("woff"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("../fonts/Inter-Bold.woff") format("woff"); font-weight: 700 900; font-display: swap; }
+/* Extra families offered to report templates (OFL licence). */
+@font-face { font-family: "Poppins"; src: url("../fonts/Poppins-Regular.woff") format("woff"); font-weight: 400 500; font-display: swap; }
+@font-face { font-family: "Poppins"; src: url("../fonts/Poppins-SemiBold.woff") format("woff"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Poppins"; src: url("../fonts/Poppins-Bold.woff") format("woff"); font-weight: 700 900; font-display: swap; }
+@font-face { font-family: "Lora"; src: url("../fonts/Lora-Variable.woff") format("woff"); font-weight: 400 700; font-display: swap; }
+/* Garet is the heading font in the client's own PDF. It is used only if it
+   is installed on the computer (or added here once its licence allows web
+   use); otherwise Montserrat stands in for it. */
+@font-face {
+    font-family: "Garet";
+    src: local("Garet Heavy"), local("Garet-Heavy"), local("Garet Bold"), local("Garet-Bold");
+    font-weight: 700 900;
+    font-display: swap;
+}
+
+:root {
+    /* Brand (measured from the TOLE August 2026 report) */
+    --jt-blue: #3500ff;
+    --jt-blue-dark: #2900c7;
+    --jt-blue-tint: #efeaff;
+    --jt-lime: #cdfe64;
+    --jt-ink: #111111;
+    --jt-footer: #ccced0;
+
+    /* App interface */
+    --bg: #f4f5f8;
+    --panel: #ffffff;
+    --line: #e2e4ea;
+    --line-strong: #cfd3dc;
+    --text: #1b1d24;
+    --muted: #646b78;
+    --danger: #b42318;
+    --danger-bg: #fdeceb;
+    --ok: #18794e;
+    --ok-bg: #e7f6ee;
+    --warn: #8a5a00;
+    --warn-bg: #fff4dc;
+    --info-bg: #eef3ff;
+
+    --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --font-heading: "Garet", "Montserrat", "Inter", Arial, sans-serif;
+    --font-report: "Montserrat", "Inter", Arial, sans-serif;
+
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 2px rgba(17, 17, 26, .06), 0 8px 24px -12px rgba(17, 17, 26, .18);
+    --focus: 0 0 0 3px rgba(53, 0, 255, .25);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--bg);
+}
+
+h1, h2, h3 { line-height: 1.25; margin: 0 0 .5em; }
+h1 { font-size: 24px; }
+h2 { font-size: 18px; }
+h3 { font-size: 15px; }
+p { margin: 0 0 .75em; }
+a { color: var(--jt-blue); }
+img { max-width: 100%; }
+code { font-size: .92em; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+
+/* The hidden attribute must win over component display rules (e.g. label { display: flex }). */
+[hidden] { display: none; }
+
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+.lime { color: var(--jt-lime); }
+.visually-hidden {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+}
+.skip-link { position: absolute; left: -9999px; top: 8px; z-index: 100; }
+.skip-link:focus { left: 8px; background: #fff; padding: 8px 12px; border-radius: var(--radius-sm); }
+
+/* ---------- Form controls ---------- */
+label { display: flex; flex-direction: column; gap: 5px; font-weight: 600; font-size: 13px; }
+label .hint { font-weight: 400; color: var(--muted); font-size: 12px; }
+input, select, textarea, button { font: inherit; }
+
+input[type="text"], input[type="email"], input[type="password"], input[type="number"],
+input[type="date"], input[type="url"], select, textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--text);
+    font-weight: 400;
+    font-size: 13.5px;
+}
+textarea { resize: vertical; min-height: 64px; line-height: 1.45; }
+input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible {
+    outline: none;
+    border-color: var(--jt-blue);
+    box-shadow: var(--focus);
+}
+.checkbox { flex-direction: row; align-items: center; font-weight: 500; }
+.checkbox input { width: auto; }
+
+.fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px 16px; margin: 0; }
+.fieldset legend { font-weight: 700; padding: 0 6px; }
+
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-row.three { grid-template-columns: repeat(3, 1fr); }
+.form-error { color: var(--danger); font-weight: 600; margin: 0; }
+
+/* ---------- Buttons ---------- */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-weight: 600; font-size: 13.5px;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    background: transparent;
+    color: var(--text);
+}
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-primary { background: var(--jt-blue); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--jt-blue-dark); }
+.btn-secondary { background: #fff; border-color: var(--line-strong); }
+.btn-secondary:hover:not(:disabled) { border-color: var(--jt-blue); color: var(--jt-blue); }
+.btn-ghost:hover:not(:disabled) { background: var(--jt-blue-tint); color: var(--jt-blue); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger-ghost { color: var(--danger); }
+.btn-danger-ghost:hover:not(:disabled) { background: var(--danger-bg); }
+.btn-sm { padding: 5px 10px; font-size: 12.5px; }
+.btn-xs { padding: 2px 8px; font-size: 12px; }
+.btn-block { width: 100%; }
+.btn.is-busy { position: relative; color: transparent; }
+.btn.is-busy::after {
+    content: ""; position: absolute; width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, .5); border-top-color: #fff; animation: spin .7s linear infinite;
+}
+.btn-secondary.is-busy::after, .btn-ghost.is-busy::after { border-color: var(--line-strong); border-top-color: var(--jt-blue); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Messages ---------- */
+.alert { padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 13.5px; }
+.alert-error { background: var(--danger-bg); color: var(--danger); }
+.alert-success { background: var(--ok-bg); color: var(--ok); }
+.alert-info { background: var(--info-bg); color: #24308a; }
+
+.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.pill-draft { background: var(--warn-bg); color: var(--warn); }
+.pill-final { background: var(--ok-bg); color: var(--ok); }
+.pill-muted { background: #eceef2; color: var(--muted); }
+
+.toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px);
+    max-width: min(520px, calc(100vw - 32px));
+    padding: 10px 16px; border-radius: var(--radius-sm);
+    background: #1b1d24; color: #fff; font-weight: 500;
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 200;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.error { background: var(--danger); }
+
+/* ---------- Modal (native <dialog>) ---------- */
+.modal {
+    border: 0; border-radius: 14px; padding: 22px 24px;
+    width: min(460px, calc(100vw - 32px));
+    box-shadow: 0 24px 64px -16px rgba(17, 17, 26, .45);
+    color: var(--text);
+}
+.modal-wide { width: min(720px, calc(100vw - 32px)); }
+.modal::backdrop { background: rgba(17, 17, 26, .45); }
+.modal h2 { margin-bottom: 0; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
