@@ -185,15 +185,18 @@ export function prepareLayout(layout) {
             const room = Math.max(2, text.w * 0.03);
             text.boxW = text.w + room;
             text.boxX = text.align === 'center' ? text.x - room / 2 : text.align === 'right' ? text.x - room : text.x;
-            // A one-line text may grow sideways into free space (a longer month, a longer name).
+            // A text may grow sideways into free space (a longer month, a longer name), but never
+            // over another text, a photo, or a shape in the background (roomLeft/roomRight, see measureRoom).
             text.freeW = text.boxW;
             text.freeX = text.boxX;
-            if (text.lines.length === 1) {
+            {
                 const beside = blocks.filter((other) => other !== text
                     && other.y < text.y + text.h && other.y + other.h > text.y
                     && (other.x >= text.x + text.w - 1 || other.x + other.w <= text.x + 1));
-                const right = Math.min(page.width - 30, ...beside.filter((o) => o.x >= text.x + text.w - 1).map((o) => o.x - 8));
-                const left = Math.max(30, ...beside.filter((o) => o.x + o.w <= text.x + 1).map((o) => o.x + o.w + 8));
+                const right = Math.min(page.width - 30, text.roomRight ?? Infinity,
+                    ...beside.filter((o) => o.x >= text.x + text.w - 1).map((o) => o.x - 8));
+                const left = Math.max(30, text.roomLeft ?? -Infinity,
+                    ...beside.filter((o) => o.x + o.w <= text.x + 1).map((o) => o.x + o.w + 8));
                 if (text.align === 'left') {
                     text.freeW = Math.max(text.boxW, right - text.x);
                 } else if (text.align === 'right') {
@@ -215,6 +218,62 @@ export function prepareLayout(layout) {
     });
     layout.prepared = true;
     return layout;
+}
+
+/**
+ * Measures, in each page's background picture, how far every text can grow
+ * left and right before it meets a shape (an arc, a band, a frame). Works for
+ * templates uploaded before this check existed. Runs once per template.
+ * assetFor(pageIndex) → (name) → URL of that page's file.
+ */
+export async function measureRoom(layout, assetFor) {
+    if (!layout || layout.roomMeasured) return layout;
+    const load = (src) => new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = src;
+    });
+    const near = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]) <= 45;
+    await Promise.all(layout.pages.map(async (page, index) => {
+        let picture;
+        try {
+            picture = await load(assetFor(index)('bg'));
+        } catch {
+            return;   // no background: fall back to the other checks
+        }
+        const scale = picture.naturalWidth / page.width;
+        const canvas = document.createElement('canvas');
+        canvas.width = picture.naturalWidth;
+        canvas.height = picture.naturalHeight;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        context.drawImage(picture, 0, 0);
+        const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        const at = (x, y) => {
+            const i = (Math.round(y * scale) * canvas.width + Math.round(x * scale)) * 4;
+            return [pixels[i], pixels[i + 1], pixels[i + 2]];
+        };
+        page.texts.forEach((text) => {
+            // Three rows through the text; the colour behind the text is the colour to stay on.
+            const rows = [0.3, 0.55, 0.8].map((f) => Math.min(page.height - 1, Math.max(0, text.y + text.h * f / Math.max(1, text.lines.length))));
+            let right = page.width - 24;
+            let left = 24;
+            rows.forEach((y) => {
+                const base = at(Math.min(page.width - 1, Math.max(0, text.x + Math.min(4, text.w / 2))), y);
+                for (let x = text.x + text.w; x < page.width - 24; x += 2) {
+                    if (!near(at(x, y), base)) { right = Math.min(right, x - 10); break; }
+                }
+                for (let x = text.x; x > 24; x -= 2) {
+                    if (!near(at(x, y), base)) { left = Math.max(left, x + 10); break; }
+                }
+            });
+            text.roomRight = right;
+            text.roomLeft = left;
+        });
+    }));
+    layout.roomMeasured = true;
+    layout.prepared = false;   // free space changed: work it out again
+    return prepareLayout(layout);
 }
 
 /* ---------- Rendering ---------- */
@@ -288,18 +347,25 @@ export function layoutPageHtml(templatePage, reportPage, state, options) {
         + `<img class="lt-bg" src="${esc(options.asset('bg'))}" alt="">${images}${texts}${links}</div>`;
 }
 
-/** Shrinks texts that grew past the space below them (down to 70%), and flags what still doesn't fit. */
+/**
+ * Shrinks texts that no longer fit their space — too tall for the room below
+ * them, or a line too wide for the free space beside them — down to 60%, and
+ * flags what still doesn't fit (red outline in the editor only).
+ */
 export function fitTexts(root) {
     root.querySelectorAll('.lt-text[data-maxh]').forEach((element) => {
         const max = Number(element.dataset.maxh);
         element.classList.remove('is-overflowing');
-        if (!max || element.scrollHeight <= max + 1) return;
+        const fits = () => element.scrollHeight <= max + 1 && element.scrollWidth <= element.clientWidth + 1;
+        if (!max || fits()) return;
         const size = parseFloat(element.style.fontSize || getComputedStyle(element).fontSize);
         const line = parseFloat(element.style.lineHeight || getComputedStyle(element).lineHeight);
-        for (let factor = 0.95; factor >= 0.7; factor -= 0.05) {
+        const spacing = parseFloat(element.style.letterSpacing) || 0;
+        for (let factor = 0.95; factor >= 0.6; factor -= 0.05) {
             element.style.fontSize = `${size * factor}px`;
             element.style.lineHeight = `${line * factor}px`;
-            if (element.scrollHeight <= max + 1) return;
+            if (spacing) element.style.letterSpacing = `${spacing * factor}px`;
+            if (fits()) return;
         }
         element.classList.add('is-overflowing');
     });

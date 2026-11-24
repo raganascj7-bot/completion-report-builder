@@ -41,3 +41,16 @@ $$('[data-photo-input]').forEach((input) => input.addEventListener('change', asy
         toast(error.message, { error: true });
     }
 }));
+
+$('#btnMailTest')?.addEventListener('click', async (event) => {
+    const button = event.currentTarget;
+    setBusy(button, true);
+    try {
+        const result = await apiPost('api/mail-test.php', {});
+        toast(`Test email sent to ${result.sentTo}. Check the inbox (and Spam).`, { duration: 6000 });
+    } catch (error) {
+        toast(error.message, { error: true, duration: 9000 });
+    } finally {
+        setBusy(button, false);
+    }
+});

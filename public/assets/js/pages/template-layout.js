@@ -10,7 +10,7 @@ import { $, $$, esc, debounce } from '../lib/dom.js';
 import { apiGet, apiPost } from '../lib/api.js';
 import { toast, setBusy } from '../lib/ui.js';
 import {
-    PAGE_WIDTH, LAYOUT_FIELDS, layoutPageHtml, prepareLayout, fitTexts, patternFits, soleField,
+    PAGE_WIDTH, LAYOUT_FIELDS, layoutPageHtml, prepareLayout, fitTexts, patternFits, soleField, measureRoom,
 } from '../builder/layout-render.js';
 
 const config = JSON.parse($('#layoutConfig').textContent);
@@ -38,7 +38,10 @@ const ROLE_TEXT = {
     slot: ['New picture each month', 'Starts empty in every new report — for screenshots.'],
 };
 
+const TWO_LINE_MONTH = /^\{month(?::\w+)?\}\n\{year\}$/;
+
 function fieldOptions(current) {
+    if (TWO_LINE_MONTH.test(current ?? '')) current = '{monthYear}';
     const sole = soleField(current) ?? (/^\{([a-zA-Z]+)(?::\w+)?(?:@\w+)?\}$/.exec(current ?? '') ? { field: /^\{([a-zA-Z]+)/.exec(current)[1] } : null);
     const value = !current ? '' : sole ? `field:${sole.field}` : 'custom';
     return `<option value=""${value === '' ? ' selected' : ''}>Keep this text as it is</option>`
@@ -55,7 +58,7 @@ function selectionHtml() {
     const text = page.texts.find((item) => item.id === selected);
     if (text) {
         const original = text.lines.join('\n');
-        const custom = text.pattern && !/^\{[a-zA-Z]+(?::\w+)?(?:@\w+)?\}$/.test(text.pattern);
+        const custom = text.pattern && !/^\{[a-zA-Z]+(?::\w+)?(?:@\w+)?\}$/.test(text.pattern) && !TWO_LINE_MONTH.test(text.pattern);
         return `
             <p class="design-subhead">Text</p>
             <pre class="layout-original">${esc(original)}</pre>
@@ -185,7 +188,11 @@ controls.addEventListener('change', (event) => {
         else if (value.startsWith('field:')) {
             const original = text.lines.join('\n');
             const upper = /[A-Za-z]/.test(original) && original === original.toUpperCase();
-            text.pattern = `{${value.slice(6)}${upper ? ':upper' : ''}}`;
+            const field = value.slice(6);
+            // "AUGUST / 2026" on two lines stays on two lines: month, then year.
+            text.pattern = field === 'monthYear' && text.lines.length >= 2
+                ? `{month${upper ? ':upper' : ''}}\n{year}`
+                : `{${field}${upper ? ':upper' : ''}}`;
         } else {
             $('[data-custom]', controls).hidden = false;
             return;
@@ -267,6 +274,7 @@ async function saveAs(status, button) {
     try {
         template = await apiPost('api/templates.php', { action: 'save_layout', id: template.id, name, status, labels: labels() });
         layout = prepareLayout(template.layout);
+        await measure();
         dirty = false;
         $('#designState').textContent = status === 'ready' ? 'Ready — in use for reports' : 'Draft — not available to reports yet';
         toast(status === 'ready' ? 'Saved. This template can now be used for reports.' : 'Saved as draft.');
@@ -287,6 +295,7 @@ $('#btnLabel')?.addEventListener('click', async (event) => {
     try {
         template = await apiPost('api/templates.php', { action: 'label', id: template.id });
         layout = prepareLayout(template.layout);
+        await measure();
         toast('The AI checked the labels.');
         render();
     } catch (error) {
@@ -304,5 +313,7 @@ window.addEventListener('beforeunload', (event) => {
 });
 window.addEventListener('resize', debounce(renderPreview, 150));
 
+const measure = () => measureRoom(layout, asset);
 if (document.fonts?.ready) await document.fonts.ready;
+await measure();
 render();

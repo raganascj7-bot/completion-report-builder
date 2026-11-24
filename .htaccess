@@ -1,0 +1,25 @@
+# Completion Report Builder — safety net for hosts where the WHOLE project
+# folder sits inside the web root (e.g. htdocs/crb/ on InfinityFree, opened as
+# https://…/crb/public/). Only public/ may be reached from the web; .env,
+# README.md, docs/, database/, app/, storage/ and .git are refused.
+# (app/, storage/ and database/ also have their own "Require all denied".)
+
+Options -Indexes
+
+# .env, .gitignore, .git and every other dotfile.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Notes and database files, even if mod_rewrite were off.
+<FilesMatch "\.(md|sql|log|example)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Opening the project folder itself goes to the app.
+    RewriteRule ^$ public/ [R=302,L]
+    # Anything that is not inside public/ is refused.
+    RewriteRule ^(?!public(/|$)) - [F,L]
+</IfModule>

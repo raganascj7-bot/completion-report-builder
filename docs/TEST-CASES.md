@@ -65,6 +65,15 @@ email invitations and sharing (tables below).
 | TC-SHR-03 | Opened items are no longer marked New | Pass |
 | TC-OVF-01 | A very long word in "Prepared for" wraps inside its column (no overlap with "Prepared by") | Pass |
 
+## Fixes after QA (Nov 24)
+
+| Bug (from the QA screenshots) | Cause | Fix | Check |
+| --- | --- | --- | --- |
+| Agency settings / client form: card titles sat on the card's border line | Browser default for `<legend>` | Titles are drawn inside the card with a divider | Every card title is inside its card (settings and client form) — Pass |
+| Cover of an exact-copy report: "NOVEMBER 2026" ran over the white arc | Free space was checked against texts and photos only, not shapes in the background picture | The background is measured beside every text; a text that is too wide shrinks to fit (down to 60%). Choosing "month and year" for a two-line text keeps two lines | SEPTEMBER 2026 stops before the arc, on one line and on two lines — Pass |
+| Team: invitation said email is not set up | No MAIL_ settings on the host | Agency settings → Email shows the sender and has **Send a test email**, which explains failures | Test email delivered; a wrong app password is explained without showing it — Pass |
+| Whole project in the web root (`/crb/public/`) | Files outside `public/` could be opened if the host allows it | `.htaccess` in the project folder refuses everything outside `public/` | Open `/crb/README.md` and `/crb/.env` on the live site: both must be 403 |
+
 ## Automated checks — report designs
 
 | Test id | Check | Result |

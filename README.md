@@ -65,6 +65,7 @@ completion-report-builder/
 ├── database/migrations/     ← upgrades for an existing database
 ├── docs/TEST-CASES.md       ← how this build maps to your test sheets
 ├── .env.example             ← copy to .env and fill in
+├── .htaccess                ← only public/ is reachable if this folder is in the web root
 └── .gitignore
 ```
 
@@ -130,6 +131,16 @@ Create the hosting account **in Ms. Jeah's name/email** so she owns it.
    PHP (usually 755 is enough on shared hosting).
 8. Open `/setup.php` once to create the Admin, then sign in and run one full
    report end to end.
+
+**Whole project inside the web root?** On hosts where you can't point the
+document root at `public/` (e.g. InfinityFree), you may have uploaded the
+whole folder, so the site opens at `https://…/crb/public/`. That works: the
+`.htaccess` in the project folder refuses everything outside `public/` (`.env`,
+README, docs, database files, `.git`). **Check it once:** open
+`https://…/crb/README.md` and `https://…/crb/.env` in a browser — both must say
+*Forbidden* (403). If either shows text, the host ignored `.htaccess`: move
+`app/`, `storage/`, `database/` and `.env` out of `htdocs` as in step 2, and
+change your database password.
 
 **Free-host check, before you build on it:** after step 4, sign in, add an
 OpenAI key and press **Draft with AI** once. Some free hosts block certain
@@ -243,6 +254,10 @@ shows an invitation link to copy and send. To send emails from a Gmail account:
    MAIL_FROM=yourname@gmail.com
    ```
 4. XAMPP: `extension=openssl` must be on in `php.ini` (it is by default).
+5. Agency settings → **Email** → **Send a test email to me**. If it fails, the
+   message says why (for example a wrong app password). On InfinityFree, PHP's
+   own `mail()` is blocked but Gmail SMTP is allowed; if port 587 times out,
+   try `MAIL_PORT=465` with `MAIL_ENCRYPTION=ssl`.
 
 Invitation links work once, for 48 hours; **Resend invitation** makes a new
 one. For a domain address later (e.g. `reports@jtdigitalmarketingservices.com`)

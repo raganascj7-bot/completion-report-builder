@@ -80,6 +80,18 @@ page_top('Agency settings', 'settings');
     </section>
 
     <section class="card">
+        <h2>Email</h2>
+        <?php if (!mail_enabled()): ?>
+            <p class="muted">Email is off, so invitations show a link to copy instead. To send emails from a Gmail account, fill in the
+                <code>MAIL_</code> settings in <code>.env</code> (README, section 6), then come back and send a test.</p>
+        <?php else: ?>
+            <p>Emails are sent from <strong><?= e((string) config('MAIL_FROM', config('MAIL_USERNAME', ''))) ?></strong>
+                <?= mail_driver() === 'log' ? '(test mode: saved in storage/logs/mail/, not sent)' : 'through ' . e((string) config('MAIL_HOST')) ?>.</p>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnMailTest">Send a test email to me</button>
+        <?php endif; ?>
+    </section>
+
+    <section class="card">
         <h2>AI usage this month</h2>
         <?php if (!ai_enabled()): ?>
             <p class="muted">AI drafting is off. Add OPENAI_API_KEY to the .env file to turn it on.</p>

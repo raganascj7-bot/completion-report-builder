@@ -125,8 +125,11 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
 .checkbox { flex-direction: row; align-items: center; font-weight: 500; }
 .checkbox input { width: auto; }
 
-.fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px 16px; margin: 0; }
-.fieldset legend { font-weight: 700; padding: 0 6px; }
+/* Grouped fields. The legend is floated so it sits INSIDE the box as a heading,
+   instead of on top of the border (the browser default looked broken on cards). */
+.fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px 16px; margin: 0; min-width: 0; }
+.fieldset > legend { float: left; width: 100%; padding: 0 0 10px; margin: 0 0 12px; border-bottom: 1px solid var(--line); font-weight: 700; font-size: 15px; }
+.fieldset > legend + * { clear: both; }
 
 .stack { display: flex; flex-direction: column; gap: 14px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }

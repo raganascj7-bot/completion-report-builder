@@ -28,6 +28,16 @@ function mail_driver(): string
     return in_array($driver, ['smtp', 'log', 'off'], true) ? $driver : 'off';
 }
 
+/** Why the last email failed (for the Admin's "Send a test email" button). */
+function mail_last_error(?string $set = null): string
+{
+    static $error = '';
+    if ($set !== null) {
+        $error = $set;
+    }
+    return $error;
+}
+
 function mail_enabled(): bool
 {
     return mail_driver() !== 'off';
@@ -75,12 +85,19 @@ function mail_html(string $heading, string $bodyHtml, string $buttonText, string
 function send_mail(string $toEmail, string $toName, string $subject, string $text, string $html): bool
 {
     $driver = mail_driver();
-    if ($driver === 'off' || !valid_email($toEmail)) {
+    mail_last_error('');
+    if ($driver === 'off') {
+        mail_last_error('Email is off: MAIL_HOST is empty in .env.');
+        return false;
+    }
+    if (!valid_email($toEmail)) {
+        mail_last_error('The address to send to is not valid.');
         return false;
     }
     $from = (string) config('MAIL_FROM', config('MAIL_USERNAME', ''));
     $fromName = (string) config('MAIL_FROM_NAME', config('APP_NAME', 'Completion Report Builder'));
     if ($driver === 'smtp' && !valid_email($from)) {
+        mail_last_error('MAIL_FROM in .env is not a valid email address.');
         log_error('Email not sent: MAIL_FROM is not a valid address.');
         return false;
     }
@@ -114,6 +131,7 @@ function send_mail(string $toEmail, string $toName, string $subject, string $tex
         smtp_send($from, $toEmail, $message);
         return true;
     } catch (Throwable $error) {
+        mail_last_error($error->getMessage());
         log_error('Email not sent: ' . $error->getMessage(), ['to' => $toEmail]);
         return false;
     }
@@ -145,11 +163,12 @@ function smtp_send(string $from, string $to, string $message): void
         }
         return [(int) substr($lines, 0, 3), trim($lines)];
     };
-    $command = static function (string $line, array $expect) use ($socket, $read): string {
+    // $secret: the line carries the username or password — never repeat it in an error.
+    $command = static function (string $line, array $expect, bool $secret = false) use ($socket, $read): string {
         fwrite($socket, $line . "\r\n");
         [$code, $reply] = $read();
         if (!in_array($code, $expect, true)) {
-            $shown = str_starts_with($line, 'AUTH') || strlen($line) > 60 ? '(login)' : $line;
+            $shown = $secret ? 'the login (check MAIL_USERNAME and the app password)' : $line;
             throw new RuntimeException("Mail server refused {$shown}: {$reply}");
         }
         return $reply;
@@ -171,8 +190,8 @@ function smtp_send(string $from, string $to, string $message): void
         }
         if ($user !== '') {
             $command('AUTH LOGIN', [334]);
-            $command(base64_encode($user), [334]);
-            $command(base64_encode($password), [235]);
+            $command(base64_encode($user), [334], true);
+            $command(base64_encode($password), [235], true);
         }
         $command("MAIL FROM:<{$from}>", [250]);
         $command("RCPT TO:<{$to}>", [250, 251]);

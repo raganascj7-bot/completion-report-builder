@@ -8,7 +8,7 @@ import { initEditor, renderEditor, setSection, currentSection } from './editor.j
 import { buildPages, emptySections, PAGE_WIDTH, PAGE_HEIGHT } from './preview.js';
 import { exportPdf } from './export-pdf.js';
 import { initLayoutEditor, isLayoutMode, refreshLayoutUi, renderLayoutNav, highlightSelection } from './layout-editor.js';
-import { freshReportLayout, prepareLayout, fitTexts } from './layout-render.js';
+import { freshReportLayout, prepareLayout, fitTexts, measureRoom } from './layout-render.js';
 import { wireShareButtons } from '../lib/share.js';
 
 const config = JSON.parse($('#builderConfig').textContent);
@@ -58,6 +58,13 @@ function renderPreview() {
     if (layoutMode) {
         fitTexts($('#previewPages'));
         highlightSelection();
+    }
+}
+
+/** Exact copies: measure the free space around each text in the template's backgrounds (once). */
+async function measureDesign(design) {
+    if (design?.kind === 'layout' && design.layout) {
+        await measureRoom(design.layout, (index) => (name) => `${design.assetBase}p${index + 1}-${name}`);
     }
 }
 
@@ -217,6 +224,7 @@ function wire() {
                     store.data.layout = freshReportLayout(prepareLayout(design.layout), id);
                 }
             }
+            await measureDesign(design);
             setDesign({ id, theme: design.theme, logoUrl: design.logoUrl, kind: design.kind, layout: design.layout, assetBase: design.assetBase });
             toast(design.kind === 'layout'
                 ? `Now using ${design.name}: an exact copy. Click any text or picture on the pages to change it.`
@@ -319,6 +327,7 @@ async function init() {
         return;
     }
     if (document.fonts?.ready) await document.fonts.ready;
+    await measureDesign(store.design);
 
     initEditor($('#editor'));
     initLayoutEditor({ nav: $('#sectionList'), editor: $('#editor'), preview: $('#previewPages'), renderPreview, renderPreviewSoon });
