@@ -10,7 +10,7 @@ storage/templates/*
 !storage/templates/.gitkeep
 
 # Dependencies and OS files
-vendor/
+/vendor/
 node_modules/
 .DS_Store
 Thumbs.db
